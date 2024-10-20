@@ -1,41 +1,85 @@
 import { Heading } from "../../components/Typography/Heading";
+import * as yup from "yup";
 import { LinkText } from "../../components/Typography/Linktext";
 import { Button } from "../../components/UI/Header/Button/Button";
-import { Link } from "react-router-dom"; 
+import { Link } from "react-router-dom";
+import { Container } from "../../components/UI/Header/Container/Container.style";
 import "./LoginPage.scss";
+import { StyleLoginPage } from "./LoginPage.style";
+import { RegistrationInfo } from "../../components/UI/Header/Registration/RegistrationInfo";
+import { Input } from "../../components/UI/Header/Input/Input";
+
+import { useForm, SubmitHandler, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+
+interface ILoginForm {
+  userEmail: string;
+  userPassword: string;
+}
+
+const LoginFormScheme = yup.object({
+  userEmail: yup.string().required("Введите ваш email").email("Некорректный email"),
+  userPassword: yup
+    .string()
+    .required("Обязательное поле")
+    .min(4, "Пароль должен состоять как минимум из 4 символов"),
+});
 
 export const LoginPage = () => {
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ILoginForm>({
+    resolver: yupResolver(LoginFormScheme),
+    defaultValues: {
+      userEmail: "",
+      userPassword: "",
+    },
+  });
+
+  const onLoginSubmit: SubmitHandler<ILoginForm> = (data) => {
+    console.log(data);
+  };
+
   return (
-    <div className="LoginPage">
-      <Heading headingText="Авторизация" />
-      <form action="#">
-        <input type="tel" placeholder="Номер телефона" />
-        <input type="password" placeholder="Пароль" />
-        <Button buttonText="Войти" />
-      </form>
-      <Link to="/reset-password">
-        <LinkText text="Забыли пароль?" />
-      </Link>
-      <div className="registration">
-        <span>
-          У вас нет аккаунта? <a href="#">Зарегистрироваться</a>
-        </span>
-        <p>Войти с помощью</p>
-        <div className="icons-wrapper">
-          <a className="reg__link google-link" href="#">
-            <img src="./img/icons/google.svg" alt="Google" />
-          </a>
-          <a className="reg__link google-plus-link" href="#">
-            <img src="./img/icons/google-plus.svg" alt="Google Plus" />
-          </a>
-          <a className="reg__link yandex-link" href="#">
-            <img src="./img/icons/yandex.svg" alt="Yandex" />
-          </a>
-          <a className="reg__link mail-ru-link" href="#">
-            <img src="./img/icons/mail-ru.svg" alt="Mail.ru" />
-          </a>
-        </div>
-      </div>
-    </div>
+    <Container>
+      <StyleLoginPage>
+        <Heading headingText="Авторизация" />
+        <form onSubmit={handleSubmit(onLoginSubmit)} action="#">
+          <Controller 
+            name="userEmail" 
+            control={control} 
+            render={({ field }) => (
+              <Input 
+                type="text" 
+                placeholder="Email"
+                errorText={errors.userEmail?.message}
+                isError={!!errors.userEmail} 
+                {...field} 
+              />
+            )}
+          />
+          <Controller 
+            name="userPassword" 
+            control={control} 
+            render={({ field }) => (
+              <Input 
+                type="password" 
+                placeholder="Пароль" 
+                errorText={errors.userPassword?.message} 
+                isError={!!errors.userPassword} 
+                {...field} 
+              />
+            )}
+          />
+          <Button isPrimary={true} buttonText="Войти" />
+        </form>
+        <Link to="/reset-password">
+          <LinkText text="Забыли пароль?" />
+        </Link>
+        <RegistrationInfo />
+      </StyleLoginPage>
+    </Container>
   );
 };

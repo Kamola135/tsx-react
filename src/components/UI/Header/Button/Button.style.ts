@@ -1,30 +1,35 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
-export const SButton = styled.button`
-    width: 100%;
-    margin-bottom: 30px;
+interface StyledButtonProps {
+  isPrimary: boolean;
+}
 
-    cursor: pointer;
-    padding: 12px 15px;
-    font-size: inherit;
-    border-radius: 10px;
-    background-color: ${props=>props.theme.colors.primeColor};
-    color: white;
-    transition: 200ms;
+export const SButton = styled.button<StyledButtonProps>`
+  width: 100%;
+  margin-bottom: 30px;
+  cursor: pointer;
+  padding: 12px 15px;
+  font-size: inherit;
+  border-radius: 10px;
+  background-color: ${(props) => props.theme.colors.primeColor};
+  color: white;
+  transition: 200ms;
 
-    &:disabled {
-    background-color: ${props=>props.theme.disabledBgc};
+  ${(props) =>
+    props.isPrimary
+      ? css`
+          background-color: ${(props) => props.theme.colors.primeColor};
+          color: white;
+        `
+      : css`
+          background-color: ${(props) => props.theme.colors.lightGray};
+          color: ${(props) => props.theme.colors.placeholderColor};
+        `}
+        
+  &:disabled {
+    background-color: ${(props) => props.theme.disabledBgc};
   }
 
-  &.primary {
-    background-color: ${props=>props.theme.colors.primeColor};
-    color: white;
-  }
-
-  &.secondary {
-    background-color: ${props=>props.theme.colors.lightGray};
-    color: ${props=>props.theme.colors.placeholderColor};
-  }
 
   &:disabled:hover {
     cursor: default;
@@ -41,4 +46,4 @@ export const SButton = styled.button`
     translate: 0 0;
     box-shadow: none;
   }
-`
+`;

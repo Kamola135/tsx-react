@@ -1,59 +1,60 @@
 import { Heading } from "../../components/Typography/Heading";
 import * as yup from "yup";
-import { LinkText } from "../../components/Typography/Linktext";
 import { Button } from "../../components/UI/Header/Button/Button";
-import { Link, useNavigate } from "react-router-dom"; // Импортируйте Link и useNavigate
 import { Container } from "../../components/UI/Header/Container/Container.style";
-import "./LoginPage.scss";
-import { StyleLoginPage } from "./LoginPage.style";
-import { RegistrationInfo } from "../../components/UI/Header/Registration/RegistrationInfo";
+import "./RegistrationPage.scss"
+import { StyleRegistrationInfo } from "../../components/UI/Header/Registration/RegistrationInfo.style";
 import { Input } from "../../components/UI/Header/Input/Input";
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useNavigate } from "react-router-dom";
 
-interface ILoginForm {
+interface IRegistrationForm {
   userEmail: string;
   userPassword: string;
+  confirmPassword: string;
 }
 
-const LoginFormScheme = yup.object({
+const RegistrationFormScheme = yup.object({
   userEmail: yup.string().required("Введите ваш email").email("Некорректный email"),
   userPassword: yup
     .string()
     .required("Обязательное поле")
     .min(4, "Пароль должен состоять как минимум из 4 символов"),
+  confirmPassword: yup
+    .string()
+    .oneOf([yup.ref('userPassword')], 'Пароли не совпадают')
+    .required('Повторите пароль'),
 });
 
-export const LoginPage = () => {
-  const navigate = useNavigate(); // Используем navigate для перенаправления
+export const RegistrationPage = () => {
   const {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<ILoginForm>({
-    resolver: yupResolver(LoginFormScheme),
+  } = useForm<IRegistrationForm>({
+    resolver: yupResolver(RegistrationFormScheme),
     defaultValues: {
       userEmail: "",
       userPassword: "",
+      confirmPassword: "",
     },
   });
 
-  const onLoginSubmit: SubmitHandler<ILoginForm> = (data) => {
+  const navigate = useNavigate();
+
+  const onRegisterSubmit: SubmitHandler<IRegistrationForm> = (data) => {
     const users = JSON.parse(localStorage.getItem("users") || "[]");
-    const user = users.find((user: any) => user.email === data.userEmail && user.password === data.userPassword);
-    
-    if (user) {
-      navigate("/mainpage"); // Перенаправление на главную страницу
-    } else {
-      alert("Такого пользователя не существует"); // Сообщение об ошибке
-    }
+    users.push({ email: data.userEmail, password: data.userPassword });
+    localStorage.setItem("users", JSON.stringify(users));
+    navigate("/"); 
   };
 
   return (
     <Container>
-      <StyleLoginPage>
-        <Heading headingText="Авторизация" />
-        <form onSubmit={handleSubmit(onLoginSubmit)} action="#">
+      <StyleRegistrationInfo>
+        <Heading headingText="Регистрация" />
+        <form onSubmit={handleSubmit(onRegisterSubmit)} action="#">
           <Controller 
             name="userEmail" 
             control={control} 
@@ -80,13 +81,22 @@ export const LoginPage = () => {
               />
             )}
           />
-          <Button isPrimary={true} buttonText="Войти" />
+          <Controller 
+            name="confirmPassword" 
+            control={control} 
+            render={({ field }) => (
+              <Input 
+                type="password" 
+                placeholder="Повторите пароль" 
+                errorText={errors.confirmPassword?.message} 
+                isError={!!errors.confirmPassword} 
+                {...field} 
+              />
+            )}
+          />
+          <Button type="submit" isPrimary={true} buttonText="Далее" />
         </form>
-        <Link to="/reset-password">
-          <LinkText text="Забыли пароль?" />
-        </Link>
-        <RegistrationInfo />
-      </StyleLoginPage>
+      </StyleRegistrationInfo>
     </Container>
   );
 };
